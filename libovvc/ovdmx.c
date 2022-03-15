@@ -168,7 +168,7 @@ static int init_rbsp_cache(struct RBSPCacheData *const rbsp_ctx);
 
 /* Realloc rbsp_cache adding an extra 64KB to previously allocated size
    and copy previous content */
-static int extend_rbsp_cache(struct RBSPCacheData *const rbsp_ctx);
+static int extend_rbsp_cache(struct RBSPCacheData *const rbsp_ctx, const int extend);
 
 static void free_rbsp_cache(struct RBSPCacheData *const rbsp_ctx);
 
@@ -295,10 +295,8 @@ ovdmx_attach_stream(OVVCDmx *const dmx, OVIO *io)
 
         cache_ctx->cache_end = cache_ctx->cache_start + read_in_buf;
 
-        if (read_in_buf < io->size) {
-            dmx->eof = 1;
-        }
-        else {
+        dmx->eof = ovio_stream_eof(dmx->io_str);
+        if(!dmx->eof) {
             /* Buffer end is set to size minus 8 so we do not overread first data chunk */
             cache_ctx->cache_end -= 8;
         }
@@ -382,6 +380,15 @@ extract_nal_unit(OVVCDmx *const dmx, struct NALUnitsList *const dst_list)
 {
     struct NALUnitsList *nalu_list = &dmx->nalu_list;
     struct NALUnitListElem *current_nalu = pop_nalu_elem(nalu_list);
+    if(dmx->eof)
+    {
+        while(current_nalu != NULL)
+        {
+            append_nalu_elem(dst_list, current_nalu);
+            current_nalu = pop_nalu_elem(nalu_list);
+        }
+        return 0;
+    }
 
     do {
         if (!current_nalu && !dmx->eof) {
@@ -642,7 +649,7 @@ append_rbsp_segment_to_cache(struct ReaderCache *const cache_ctx,
 
     if (rbsp_cache->cache_size < rbsp_cache->rbsp_size + sgmt_size) {
         int ret;
-         ret = extend_rbsp_cache(rbsp_cache);
+         ret = extend_rbsp_cache(rbsp_cache, sgmt_size);
          if (ret < 0) {
              return ret;
          }
@@ -878,11 +885,11 @@ free_rbsp_cache(struct RBSPCacheData *const rbsp_ctx)
 }
 
 static int
-extend_rbsp_cache(struct RBSPCacheData *const rbsp_ctx)
+extend_rbsp_cache(struct RBSPCacheData *const rbsp_ctx, const int extend)
 {
     uint8_t *old_cache = rbsp_ctx->start;
     uint8_t *new_cache;
-    size_t new_size = rbsp_ctx->cache_size + OVRBSP_CACHE_SIZE;
+    size_t new_size = rbsp_ctx->cache_size + ((extend / OVRBSP_CACHE_SIZE) + 1) + OVRBSP_CACHE_SIZE;
 
     new_cache = ov_malloc(new_size);
     if (!new_cache) {
