@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 /*
  * This file contains wrappers for IO functions
@@ -25,7 +26,15 @@ typedef struct OVFileIO {
     FILE* file;
 } OVFileIO;
 
+typedef struct OVBuffIO {
+    struct OVIO super;
+    uint8_t* buff;
+    bool eof;
+    int error;
+} OVBuffIO;
+
 OVFileIO* ovio_new_fileio(const char* path, const char* mode);
+OVBuffIO* ovio_new_buffio(const uint8_t* buff, size_t size);
 
 OVIOStream *ovio_stream_open(OVIO *io);
 

@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "ovmem.h"
 
@@ -61,6 +62,45 @@ ovio_new_fileio(const char* path, const char* mode)
   return io;
 }
 
+static int OVBuffIOClose(OVIO* io)
+{
+    OVBuffIO* buff_io = (OVBuffIO*) io;
+    free(buff_io->buff);
+    free(buff_io);
+    return 0;
+}
+
+static size_t OVBuffIORead(void *ptr, OVIO* io)
+{
+    OVBuffIO* buff_io = (OVBuffIO*) io;
+    memcpy(ptr, buff_io->buff, io->size);
+    buff_io->eof = true;
+    return io->size;
+}
+
+static int OVBuffIOEOF(OVIO* io)
+{
+    OVBuffIO* buff_io = (OVBuffIO*) io;
+    return buff_io->eof;
+}
+
+const OVBuffIO defaultBuffIO = {
+  .super = { .close = OVBuffIOClose, .read = OVBuffIORead, .eof = OVBuffIOEOF, .size = 0 },
+  .buff = NULL,
+  .eof = false,
+};
+
+OVBuffIO*
+ovio_new_buffio(const uint8_t* buff, size_t size)
+{
+    OVBuffIO* buf_io = ov_malloc(sizeof(OVBuffIO));
+    OVIO* io = (OVIO*)buf_io;
+    memcpy(buf_io, &defaultBuffIO, sizeof(OVBuffIO));
+    buf_io->buff = ov_malloc(sizeof(uint8_t) * size);
+    memcpy(buf_io->buff, buff, size);
+    io->size = size;
+    return buf_io;
+}
 
 static int ovread_buff_init(struct OVReadBuff *const cache_buff,
                              size_t buff_size);
