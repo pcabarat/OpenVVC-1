@@ -251,7 +251,6 @@ ovdmx_close(OVVCDmx *vvcdmx)
 
         free_nalu_list(&vvcdmx->nalu_list);
 
-        free_nalu_elem(vvcdmx->nalu_pending);
 
         ov_free(vvcdmx);
 
@@ -319,6 +318,10 @@ ovdmx_detach_stream(OVVCDmx *const dmx)
     if (dmx->io_str != NULL) {
         ovio_stream_close(dmx->io_str);
     }
+
+    if (dmx->nalu_pending)
+        free_nalu_elem(dmx->nalu_pending);
+    dmx->nalu_pending = NULL;
 
     dmx->io_str = NULL;
     /* FIXME ReaderCache  should be reset */
