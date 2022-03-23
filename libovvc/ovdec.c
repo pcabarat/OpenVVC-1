@@ -431,7 +431,7 @@ ovdec_submit_picture_unit(OVVCDec *vvcdec, const OVPictureUnit *const pu)
 int
 ovdec_receive_picture(OVVCDec *dec, OVFrame **frame_p)
 {
-    struct OVSEI *sei;
+    struct OVSEI *sei = NULL;
     OVDPB *dpb = dec->dpb;
     int ret = 0;
 
@@ -445,14 +445,15 @@ ovdec_receive_picture(OVVCDec *dec, OVFrame **frame_p)
     if (*frame_p) {
         pp_process_frame(sei, frame_p);
 
-        if (sei->sei_fg) {
+        if (sei && sei->sei_fg) {
             ov_freep(&sei->sei_fg);
         }
 
-        if (sei->sei_slhdr) {
+        if (sei && sei->sei_slhdr) {
             ov_freep(&sei->sei_slhdr);
         }
 
+        if (sei)
         ov_freep(&sei);
     }
 
@@ -469,7 +470,7 @@ ovdec_receive_picture(OVVCDec *dec, OVFrame **frame_p)
 int
 ovdec_drain_picture(OVVCDec *dec, OVFrame **frame_p)
 {
-    struct OVSEI *sei;
+    struct OVSEI *sei = NULL;
     OVDPB *dpb = dec->dpb;
     int ret;
 
@@ -489,14 +490,15 @@ ovdec_drain_picture(OVVCDec *dec, OVFrame **frame_p)
     if (*frame_p) {
         pp_process_frame(sei, frame_p);
 
-        if (sei->sei_fg) {
+        if (sei && sei->sei_fg) {
             ov_freep(&sei->sei_fg);
         }
 
-        if (sei->sei_slhdr) {
+        if (sei && sei->sei_slhdr) {
             ov_freep(&sei->sei_slhdr);
         }
 
+        if (sei)
         ov_freep(&sei);
     }
 
