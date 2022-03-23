@@ -96,8 +96,7 @@ ovio_new_buffio(const uint8_t* buff, size_t size)
     OVBuffIO* buf_io = ov_malloc(sizeof(OVBuffIO));
     OVIO* io = (OVIO*)buf_io;
     memcpy(buf_io, &defaultBuffIO, sizeof(OVBuffIO));
-    buf_io->buff = ov_malloc(sizeof(uint8_t) * size);
-    memcpy(buf_io->buff, buff, size);
+    buf_io->buff = buff;
     io->size = size;
     return buf_io;
 }
