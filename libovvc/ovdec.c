@@ -405,15 +405,18 @@ vvc_decode_picture_unit(OVVCDec *dec, const OVPictureUnit *pu)
 {
     int i;
     int ret;
+    ovpu_new_ref(&dec->pu, pu);
     for (i = 0; i < pu->nb_nalus; ++i) {
         ret = decode_nal_unit(dec, pu->nalus[i]);
         if (ret < 0) {
             goto fail;
         }
     }
+    ovpu_unref(&dec->pu);
     return 0;
 
 fail:
+    ovpu_unref(&dec->pu);
     /* Error processing if needed */
     return ret;
 }

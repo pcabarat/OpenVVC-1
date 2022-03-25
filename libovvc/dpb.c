@@ -1115,6 +1115,8 @@ ovdpb_init_picture(OVDPB *dpb, OVPicture **pic_p, const OVPS *const ps, uint8_t 
     (*pic_p)->frame->width  = ps->pps->pps_pic_width_in_luma_samples;
     (*pic_p)->frame->height = ps->pps->pps_pic_height_in_luma_samples;
 
+    ovpu_new_ref(&(*pic_p)->frame->pu, ovdec->pu);
+
     if (ps->pps->pps_conformance_window_flag) {
         (*pic_p)->frame->output_window.offset_lft = ps->pps->pps_conf_win_left_offset;
         (*pic_p)->frame->output_window.offset_rgt = ps->pps->pps_conf_win_right_offset;

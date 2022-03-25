@@ -88,6 +88,9 @@ struct Frame
 
     /* Opaque Data */
     void *opaque;
+
+    /* Reference to associated Picture Unit */
+    struct OVPictureUnit *pu;
 };
 
 /* Reference an OVFrame pointer

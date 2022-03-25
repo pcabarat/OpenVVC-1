@@ -340,6 +340,8 @@ struct OVVCDec
         int opt1;
     }options;
 
+    struct OVPictureUnit *pu;
+
 };
 
 #endif
